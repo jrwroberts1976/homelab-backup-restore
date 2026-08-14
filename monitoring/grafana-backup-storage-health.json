@@ -1,0 +1,64 @@
+{
+  "__inputs": [{"name":"DS_PROMETHEUS","label":"Prometheus","type":"datasource","pluginId":"prometheus","pluginName":"Prometheus"}],
+  "title":"Homelab Backup Storage Health",
+  "uid":"homelab-backup-storage-health",
+  "schemaVersion":39,
+  "version":1,
+  "refresh":"5m",
+  "time":{"from":"now-24h","to":"now"},
+  "tags":["homelab","backup","storage"],
+  "panels":[
+    {
+      "id":1,"type":"stat","title":"Storage healthy","gridPos":{"h":5,"w":6,"x":0,"y":0},
+      "datasource":{"type":"prometheus","uid":"${DS_PROMETHEUS}"},
+      "targets":[{"refId":"A","expr":"count(homelab_backup_storage_mounted == 1 and homelab_backup_storage_writable == 1)"}],
+      "fieldConfig":{"defaults":{"unit":"short","thresholds":{"mode":"absolute","steps":[{"color":"red","value":null},{"color":"green","value":1}]}},"overrides":[]},
+      "options":{"reduceOptions":{"calcs":["lastNotNull"]},"colorMode":"value","graphMode":"none","justifyMode":"center"}
+    },
+    {
+      "id":2,"type":"stat","title":"Storage warnings","gridPos":{"h":5,"w":6,"x":6,"y":0},
+      "datasource":{"type":"prometheus","uid":"${DS_PROMETHEUS}"},
+      "targets":[{"refId":"A","expr":"count(homelab_backup_storage_used_percent >= 80)"}],
+      "fieldConfig":{"defaults":{"unit":"short","thresholds":{"mode":"absolute","steps":[{"color":"green","value":null},{"color":"red","value":1}]}},"overrides":[]},
+      "options":{"reduceOptions":{"calcs":["lastNotNull"]},"colorMode":"value","graphMode":"none","justifyMode":"center"}
+    },
+    {
+      "id":3,"type":"stat","title":"Storage critical","gridPos":{"h":5,"w":6,"x":12,"y":0},
+      "datasource":{"type":"prometheus","uid":"${DS_PROMETHEUS}"},
+      "targets":[{"refId":"A","expr":"count(homelab_backup_storage_used_percent >= 90) + count(homelab_backup_storage_mounted == 0) + count(homelab_backup_storage_writable == 0)"}],
+      "fieldConfig":{"defaults":{"unit":"short","thresholds":{"mode":"absolute","steps":[{"color":"green","value":null},{"color":"red","value":1}]}},"overrides":[]},
+      "options":{"reduceOptions":{"calcs":["lastNotNull"]},"colorMode":"value","graphMode":"none","justifyMode":"center"}
+    },
+    {
+      "id":4,"type":"stat","title":"Free backup storage","gridPos":{"h":5,"w":6,"x":18,"y":0},
+      "datasource":{"type":"prometheus","uid":"${DS_PROMETHEUS}"},
+      "targets":[{"refId":"A","expr":"sum(homelab_backup_storage_free_bytes)"}],
+      "fieldConfig":{"defaults":{"unit":"bytesdecimal"},"overrides":[]},
+      "options":{"reduceOptions":{"calcs":["lastNotNull"]},"colorMode":"value","graphMode":"none","justifyMode":"center"}
+    },
+    {
+      "id":5,"type":"table","title":"Backup storage by location","gridPos":{"h":10,"w":24,"x":0,"y":5},
+      "datasource":{"type":"prometheus","uid":"${DS_PROMETHEUS}"},
+      "targets":[{"refId":"A","expr":"homelab_backup_storage_used_percent","format":"table","instant":true}],
+      "transformations":[{"id":"organize","options":{"excludeByName":{"Time":true,"__name__":true},"renameByName":{"storage":"Storage","path":"Path","Value":"Used %"}}}],
+      "fieldConfig":{"defaults":{"unit":"percent","decimals":1,"thresholds":{"mode":"absolute","steps":[{"color":"green","value":null},{"color":"yellow","value":80},{"color":"red","value":90}]},"custom":{"align":"auto","displayMode":"color-text"}},"overrides":[]},
+      "options":{"showHeader":true,"cellHeight":"sm"}
+    },
+    {
+      "id":6,"type":"timeseries","title":"Backup storage utilisation","gridPos":{"h":9,"w":24,"x":0,"y":15},
+      "datasource":{"type":"prometheus","uid":"${DS_PROMETHEUS}"},
+      "targets":[{"refId":"A","expr":"homelab_backup_storage_used_percent","legendFormat":"{{storage}}"}],
+      "fieldConfig":{"defaults":{"unit":"percent","min":0,"max":100,"decimals":1,"thresholds":{"mode":"absolute","steps":[{"color":"green","value":null},{"color":"yellow","value":80},{"color":"red","value":90}]}},"overrides":[]},
+      "options":{"legend":{"displayMode":"table","placement":"bottom"},"tooltip":{"mode":"multi"}}
+    },
+    {
+      "id":7,"type":"timeseries","title":"Free backup storage","gridPos":{"h":9,"w":24,"x":0,"y":24},
+      "datasource":{"type":"prometheus","uid":"${DS_PROMETHEUS}"},
+      "targets":[{"refId":"A","expr":"homelab_backup_storage_free_bytes","legendFormat":"{{storage}}"}],
+      "fieldConfig":{"defaults":{"unit":"bytesdecimal","decimals":1},"overrides":[]},
+      "options":{"legend":{"displayMode":"table","placement":"bottom"},"tooltip":{"mode":"multi"}}
+    }
+  ],
+  "annotations":{"list":[]},
+  "links":[]
+}
