@@ -12,7 +12,8 @@ The backup system is intended to provide:
 - a central backup service on `ids-01`;
 - a second independent copy of the complete backup estate on `k3s-node-01`;
 - tested procedures for restoring one file, an application, a host, or rebuilding from bare metal;
-- a documented Stage 2 path for a third copy on dedicated/off-host storage.
+- a documented Stage 2 path for a third copy on dedicated/off-host storage;
+- operational monitoring of backup freshness and restore-test health through Prometheus/Grafana.
 
 ## Current Stage 1 Architecture
 
@@ -53,6 +54,7 @@ k3s-node-01:/home/homelab-backup/replica/ids-01
 - Greenbone PostgreSQL custom-format dump on ids-01.
 - Restore testing for critical datasets.
 - Daily replica from ids-01 to k3s-node-01.
+- Backup/restore health dashboard design for Prometheus/Grafana.
 
 ### Stage 2 — planned
 
@@ -75,6 +77,9 @@ k3s-node-01:/home/homelab-backup/replica/ids-01
 - [Credentials, keys and security](docs/08-security-and-key-management.md)
 - [Validation, testing and maintenance](docs/09-validation-and-maintenance.md)
 - [Stage 2 roadmap](docs/10-stage-2-roadmap.md)
+- [Backup health dashboard](monitoring/README.md)
+- [Grafana dashboard JSON](monitoring/grafana-backup-health.json)
+- [Prometheus textfile exporter](monitoring/backup-status-exporter.sh)
 
 ## Recovery Priorities
 
@@ -92,5 +97,7 @@ When recovering from a major outage, use this order unless the failure scenario 
 ## Important Principle
 
 A backup is not considered complete merely because a backup command returned success. Critical datasets must periodically be restored into an isolated location and validated.
+
+The dashboard follows the same principle: a repository is healthy only when a recent backup exists, and recovery confidence is healthy only when a recent validated restore test exists.
 
 Do **not** commit Restic repository passwords, REST server passwords, private SSH keys, TLS private keys, K3s tokens, application secrets, or database credentials to this repository.
